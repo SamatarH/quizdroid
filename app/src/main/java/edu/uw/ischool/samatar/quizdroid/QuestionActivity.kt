@@ -13,6 +13,7 @@ class QuestionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuestionBinding
     private val quizViewModel: QuizViewModel by viewModels()
     private var currentQuestionIndex: Int = 0
+    private var totalQuestions: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -20,54 +21,60 @@ class QuestionActivity : AppCompatActivity() {
         val view = binding.root
         setContentView(view)
 
-        // Set up Submit button click listener
         binding.submitButton.setOnClickListener {
             val selectedOptionId = binding.radioGroup.checkedRadioButtonId
             if (selectedOptionId != -1) {
                 val selectedRadioButton = findViewById<RadioButton>(selectedOptionId)
                 val selectedAnswer = selectedRadioButton.text.toString()
-                val correctAnswer = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)?.correctAnswer
-                quizViewModel.checkAnswer(selectedAnswer, correctAnswer!!)
-                // Show the answer page after checking the answer
-                navigateToAnswerActivity()
+                val correctAnswer = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)?.correctAnswer ?: ""
+
+                quizViewModel.checkAnswer(selectedAnswer, correctAnswer)
+
+                if (currentQuestionIndex < (quizViewModel.questionsLiveData.value?.size ?: 0) - 1) {
+                    currentQuestionIndex++
+                    updateQuestion()
+                } else {
+                    navigateToAnswerActivity(selectedAnswer, correctAnswer)
+                }
             } else {
-                // If no option selected, show a Toast message
                 Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Observe questionsLiveData and display the first question
-        quizViewModel.questionsLiveData.observe(this, Observer { questions ->
-            if (currentQuestionIndex < questions.size) {
-                val currentQuestion = questions[currentQuestionIndex]
-                binding.questionTextView.text = currentQuestion.text
-                val options = currentQuestion.options
-                binding.radioGroup.removeAllViews()
-                for (i in options.indices) {
-                    val radioButton = RadioButton(this)
-                    radioButton.text = options[i]
-                    binding.radioGroup.addView(radioButton)
-                }
-            } else {
-                // No more questions, finish the quiz
-                navigateToAnswerActivity()
-            }
-        })
-
-        // Fetch questions based on the selected category (math, physics, marvel)
         val selectedCategory = intent.getStringExtra("CATEGORY") ?: "math"
         quizViewModel.fetchQuestions(selectedCategory)
+
+        quizViewModel.questionsLiveData.observe(this, Observer { questions ->
+            if (questions.isNotEmpty()) {
+                totalQuestions = questions.size
+                updateQuestion()
+            } else {
+                Toast.makeText(this, "No questions available for this category", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        })
     }
 
-    // Function to navigate to AnswerActivity
-    private fun navigateToAnswerActivity() {
+    private fun updateQuestion() {
+        val currentQuestion = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)
+        currentQuestion?.let {
+            binding.questionTextView.text = it.text
+            val options = it.options
+            binding.radioGroup.removeAllViews()
+            for (i in options.indices) {
+                val radioButton = RadioButton(this)
+                radioButton.text = options[i]
+                binding.radioGroup.addView(radioButton)
+            }
+        }
+    }
+
+    private fun navigateToAnswerActivity(selectedAnswer: String, correctAnswer: String) {
         val intent = Intent(this, AnswerActivity::class.java)
-        // Pass necessary data to AnswerActivity
-        intent.putExtra("totalQuestions", currentQuestionIndex)
+        intent.putExtra("totalQuestions", totalQuestions)
         intent.putExtra("totalCorrectAnswers", quizViewModel.totalCorrectAnswers)
+        intent.putExtra("selectedAnswer", selectedAnswer)
+        intent.putExtra("correctAnswer", correctAnswer)
         startActivity(intent)
-        finish() // Finish the current activity to prevent going back to the quiz after finishing it
     }
 }
-
-

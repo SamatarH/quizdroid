@@ -2,47 +2,64 @@ package edu.uw.ischool.samatar.quizdroid
 
 import android.content.Intent
 import android.os.Bundle
-import android.widget.Button
-import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import edu.uw.ischool.samatar.quizdroid.databinding.ActivityAnswersBinding
+import android.view.View
 
 class AnswerActivity : AppCompatActivity() {
+    private lateinit var binding: ActivityAnswersBinding
+    private var currentQuestionIndex: Int = 0
+    private var totalQuestions: Int = 0
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_answers)
+        binding = ActivityAnswersBinding.inflate(layoutInflater)
+        val view = binding.root
+        setContentView(view)
 
-        val userAnswer = intent.getStringExtra("userAnswer") ?: ""
-        val correctAnswer = intent.getStringExtra("correctAnswer") ?: ""
+        totalQuestions = intent.getIntExtra("totalQuestions", 0)
         val totalCorrectAnswers = intent.getIntExtra("totalCorrectAnswers", 0)
-        val totalQuestions = intent.getIntExtra("totalQuestions", 0)
-        val currentQuestionIndex = intent.getIntExtra("currentQuestionIndex", 0)
+        val selectedAnswer = intent.getStringExtra("selectedAnswer") ?: ""
+        val correctAnswer = intent.getStringExtra("correctAnswer") ?: ""
 
-        val userAnswerTextView: TextView = findViewById(R.id.userAnswerTextView)
-        val correctAnswerTextView: TextView = findViewById(R.id.correctAnswerTextView)
-        val scoreTextView: TextView = findViewById(R.id.scoreTextView)
-        val nextButton: Button = findViewById(R.id.nextButton)
+        binding.userAnswerTextView.text = "Your Answer: $selectedAnswer"
+        binding.correctAnswerTextView.text = "Correct Answer: $correctAnswer"
+        binding.scoreTextView.text = "You have $totalCorrectAnswers out of $totalQuestions correct"
 
-        userAnswerTextView.text = "Your Answer: $userAnswer"
-        correctAnswerTextView.text = "Correct Answer: $correctAnswer"
-
-        // Calculate and display the score (total correct vs total questions)
-        val score = "You have $totalCorrectAnswers out of $totalQuestions correct"
-        scoreTextView.text = score
-
-        // Set click listener for Next button
-        nextButton.setOnClickListener {
-            val intent = if (currentQuestionIndex < totalQuestions - 1) {
-                // Navigate to the next question
-                Intent(this, QuestionActivity::class.java)
-                    .putExtra("currentQuestionIndex", currentQuestionIndex + 1)
-            } else {
-                // If there are no more questions, navigate to FinishActivity
-                Intent(this, FinishActivity::class.java)
+        if (currentQuestionIndex < totalQuestions - 1) {
+            binding.nextButton.setOnClickListener {
+                moveToNextQuestion()
             }
-            startActivity(intent)
-            finish()
+            binding.finishButton.visibility = View.GONE
+        } else {
+            binding.nextButton.visibility = View.GONE
+            binding.finishButton.setOnClickListener {
+                navigateToFirstTopicListPage()
+            }
         }
     }
+
+    private fun moveToNextQuestion() {
+        val intent = Intent(this, QuestionActivity::class.java)
+        intent.putExtra("CATEGORY", "math") // Replace "math" with the actual category of the quiz
+        startActivity(intent)
+        finish()
+    }
+
+    private fun navigateToFirstTopicListPage() {
+        val intent = Intent(this, MainActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
+    }
 }
+
+
+
+
+
+
+
+
 
 
