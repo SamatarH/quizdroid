@@ -12,3 +12,11 @@ data class Question(
     val correctAnswer: String
 ) : Parcelable
 
+
+@Serializable
+data class Topic(
+    val id: Int,
+    val title: String,
+    val desc: String,
+    val questions: List<Question>
+)

@@ -1,37 +1,34 @@
 package edu.uw.ischool.samatar.quizdroid
 
 import android.content.Context
-import kotlinx.serialization.*
-import kotlinx.serialization.json.*
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.decodeFromString
 import java.io.IOException
-import edu.uw.ischool.samatar.quizdroid.Question
 
-@Serializable
-data class Topic(
-    val title: String,
-    val desc: String,
-    val questions: List<Question>
-)
+interface TopicRepository {
+    fun getTopics(): List<Topic>
+    fun getTopicById(topicId: Int): Topic?
+}
 
-class TopicRepository(private val context: Context) {
+class JsonTopicRepository(private val context: Context) : TopicRepository {
+    private val jsonFileName = "questions.json"
+    private val jsonParser = Json { ignoreUnknownKeys = true }
 
-    private val questionsFileName = "questions.json"
+    override fun getTopics(): List<Topic> {
 
-    fun getTopics(): List<Topic> {
         return try {
-            val fis = context.openFileInput(questionsFileName)
-            val json = fis.bufferedReader().use { it.readText() }
-            parseTopics(json)
-        } catch (e: IOException) {  // Make sure the catch block is catching IOException
+            val jsonString = context.openFileInput(jsonFileName).bufferedReader().use { it.readText() }
+            jsonParser.decodeFromString(jsonString)
+        } catch (e: IOException) {
             e.printStackTrace()
             emptyList()
         }
     }
 
-    private fun parseTopics(json: String): List<Topic> {
-        val jsonParser = Json { ignoreUnknownKeys = true }
-        return jsonParser.decodeFromString(json)
+    override fun getTopicById(topicId: Int): Topic? {
+        return getTopics().find { it.id == topicId }
     }
 }
+
 
 

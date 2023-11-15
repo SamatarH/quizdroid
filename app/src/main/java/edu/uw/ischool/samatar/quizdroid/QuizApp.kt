@@ -15,9 +15,11 @@ class QuizApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        Log.d("QuizApp", "Application is loaded and running")
         instance = this
-        topicRepository = InMemoryTopicRepository()
+        topicRepository = JsonTopicRepository(this)
+        Log.d("QuizApp", "Application is loaded and running")
     }
 }
+
+
 
