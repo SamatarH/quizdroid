@@ -8,6 +8,7 @@ import androidx.lifecycle.Observer
 import edu.uw.ischool.samatar.quizdroid.databinding.ActivityQuestionBinding
 import android.widget.RadioButton
 import android.widget.Toast
+import edu.uw.ischool.samatar.quizdroid.Question
 
 class QuestionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuestionBinding

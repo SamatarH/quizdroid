@@ -2,6 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
+    kotlin("plugin.serialization") version "1.5.21"
 }
 
 android {
@@ -56,4 +57,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
     implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.preference:preference-ktx:1.1.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
 }
