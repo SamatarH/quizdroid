@@ -55,4 +55,5 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:2.3.1")
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:2.3.1")
     implementation("androidx.activity:activity-ktx:1.4.0")
+    implementation("androidx.preference:preference-ktx:1.1.1")
 }

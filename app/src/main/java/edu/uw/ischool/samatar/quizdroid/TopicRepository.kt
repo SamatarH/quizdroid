@@ -1,14 +1,24 @@
 package edu.uw.ischool.samatar.quizdroid
 
-interface TopicRepository {
-    fun getTopics(): List<Topic>
-    fun getTopicById(topicId: Int): Topic?
-}
+import android.content.Context
+import java.io.IOException
 
-data class Topic(
-    val id: Int,
-    val title: String,
-    val shortDescription: String,
-    val longDescription: String,
-    val questions: List<Question>
-)
+class TopicRepository(private val context: Context) {
+
+    private val questionsFileName = "questions.json"
+
+    fun getTopics(): List<Topic> {
+        return try {
+            val fis = context.openFileInput(questionsFileName)
+            val json = fis.bufferedReader().use { it.readText() }
+            parseTopics(json)
+        } catch (e: IOException) {
+            e.printStackTrace()
+            emptyList()
+        }
+    }
+
+    private fun parseTopics(json: String): List<Topic> {
+
+    }
+}
