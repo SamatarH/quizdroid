@@ -2,7 +2,7 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("kotlin-parcelize")
-    kotlin("plugin.serialization") version "1.5.21"
+    id("org.jetbrains.kotlin.plugin.serialization") version "1.5.10"
 }
 
 android {
@@ -58,4 +58,8 @@ dependencies {
     implementation("androidx.activity:activity-ktx:1.4.0")
     implementation("androidx.preference:preference-ktx:1.1.1")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.1")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.2.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.3.2")
+    implementation("androidx.work:work-runtime-ktx:2.7.1")
+    implementation("com.squareup.okhttp3:okhttp:4.9.1")
 }

@@ -1,10 +1,12 @@
 package edu.uw.ischool.samatar.quizdroid
 
+import android.app.Application
+import android.widget.Toast
+import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
 
-class QuizViewModel : ViewModel() {
+class QuizViewModel(application: Application) : AndroidViewModel(application) {
     private val _questionsLiveData = MutableLiveData<List<Question>>()
     val questionsLiveData: LiveData<List<Question>> get() = _questionsLiveData
 
@@ -12,22 +14,25 @@ class QuizViewModel : ViewModel() {
     val totalCorrectAnswers: Int
         get() = _totalCorrectAnswers
 
-    // Function to fetch questions based on the selected category
+    private val topicRepository = JsonTopicRepository(application)
+
     fun fetchQuestions(category: String) {
-        val fetchedQuestions = QuizRepository().getQuestions(category)
-        _questionsLiveData.value = fetchedQuestions
+        val topics = topicRepository.getTopics()
+        val selectedTopic = topics.find { it.title.equals(category, ignoreCase = true) }
+        _questionsLiveData.value = selectedTopic?.questions
     }
 
-    // Function to handle user's answer and update correct answers count
     fun checkAnswer(userAnswer: String, correctAnswer: String) {
         if (userAnswer == correctAnswer) {
-            handleCorrectAnswer()
+            _totalCorrectAnswers++
         }
-        // Any other logic related to correct answers can be added here
     }
 
-    // Function to handle correct answer logic (incrementing correct answers count)
-    fun handleCorrectAnswer() {
-        _totalCorrectAnswers++
+    fun startDataSync() {
+        val syncManager = SyncManager(getApplication())
+        val url = "http://example.com/questions.json" // Replace with your actual URL
+        val interval = 15L // Replace with your desired interval in minutes
+        syncManager.scheduleDownload(url, interval)
     }
+
 }

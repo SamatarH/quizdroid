@@ -8,7 +8,6 @@ import androidx.lifecycle.Observer
 import edu.uw.ischool.samatar.quizdroid.databinding.ActivityQuestionBinding
 import android.widget.RadioButton
 import android.widget.Toast
-import edu.uw.ischool.samatar.quizdroid.Question
 
 class QuestionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityQuestionBinding
@@ -19,28 +18,7 @@ class QuestionActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityQuestionBinding.inflate(layoutInflater)
-        val view = binding.root
-        setContentView(view)
-
-        binding.submitButton.setOnClickListener {
-            val selectedOptionId = binding.radioGroup.checkedRadioButtonId
-            if (selectedOptionId != -1) {
-                val selectedRadioButton = findViewById<RadioButton>(selectedOptionId)
-                val selectedAnswer = selectedRadioButton.text.toString()
-                val correctAnswer = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)?.correctAnswer ?: ""
-
-                quizViewModel.checkAnswer(selectedAnswer, correctAnswer)
-
-                if (currentQuestionIndex < (quizViewModel.questionsLiveData.value?.size ?: 0) - 1) {
-                    currentQuestionIndex++
-                    updateQuestion()
-                } else {
-                    navigateToAnswerActivity(selectedAnswer, correctAnswer)
-                }
-            } else {
-                Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show()
-            }
-        }
+        setContentView(binding.root)
 
         val selectedCategory = intent.getStringExtra("CATEGORY") ?: "math"
         quizViewModel.fetchQuestions(selectedCategory)
@@ -54,28 +32,51 @@ class QuestionActivity : AppCompatActivity() {
                 finish()
             }
         })
+
+        binding.submitButton.setOnClickListener {
+            val selectedOptionId = binding.radioGroup.checkedRadioButtonId
+            if (selectedOptionId != -1) {
+                val selectedRadioButton = findViewById<RadioButton>(selectedOptionId)
+                val selectedAnswer = selectedRadioButton.text.toString()
+                val correctAnswer = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)?.correctAnswer ?: ""
+
+                quizViewModel.checkAnswer(selectedAnswer, correctAnswer)
+
+                if (currentQuestionIndex < totalQuestions - 1) {
+                    currentQuestionIndex++
+                    updateQuestion()
+                } else {
+                    navigateToAnswerActivity(selectedAnswer, correctAnswer)
+                }
+            } else {
+                Toast.makeText(this, "Please select an option", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun updateQuestion() {
         val currentQuestion = quizViewModel.questionsLiveData.value?.get(currentQuestionIndex)
-        currentQuestion?.let {
-            binding.questionTextView.text = it.text
-            val options = it.options
+        currentQuestion?.let { question ->
+            binding.questionTextView.text = question.text
             binding.radioGroup.removeAllViews()
-            for (i in options.indices) {
-                val radioButton = RadioButton(this)
-                radioButton.text = options[i]
+            question.options.forEach { option ->
+                val radioButton = RadioButton(this).apply {
+                    text = option
+                }
                 binding.radioGroup.addView(radioButton)
             }
         }
     }
 
     private fun navigateToAnswerActivity(selectedAnswer: String, correctAnswer: String) {
-        val intent = Intent(this, AnswerActivity::class.java)
-        intent.putExtra("totalQuestions", totalQuestions)
-        intent.putExtra("totalCorrectAnswers", quizViewModel.totalCorrectAnswers)
-        intent.putExtra("selectedAnswer", selectedAnswer)
-        intent.putExtra("correctAnswer", correctAnswer)
+        val intent = Intent(this, AnswerActivity::class.java).apply {
+            putExtra("totalQuestions", totalQuestions)
+            putExtra("totalCorrectAnswers", quizViewModel.totalCorrectAnswers)
+            putExtra("selectedAnswer", selectedAnswer)
+            putExtra("correctAnswer", correctAnswer)
+        }
         startActivity(intent)
     }
 }
+
+
